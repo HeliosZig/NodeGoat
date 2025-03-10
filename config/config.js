@@ -8,7 +8,7 @@ const allConf = require(path.resolve(__dirname + "/../config/env/all.js"))
 const envConf = require(path.resolve(__dirname + "/../config/env/" + finalEnv.toLowerCase() + ".js")) || {}
 
 const config = { ...allConf, ...envConf }
-
+const pass = 'ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 console.log(`Current Config:`)
 console.log(util.inspect(config, false, null))
 
