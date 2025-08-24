@@ -1,0 +1,122 @@
+#
+# Dummy Python Script for Security Scanner Testing
+#
+# This file is designed to demonstrate what SAST, SCA, and Secret Detection
+# scanners look for. The examples below are INSECURE and should NOT be used
+# in any production environment. They are intentionally broken to serve as
+# test cases for security tools.
+#
+# To test your scanner, you can uncomment the relevant lines.
+#
+import os
+import requests
+import json
+import sqlite3
+
+# --- SECTION 1: SAST (Static Application Security Testing) Examples ---
+# SAST scanners look for patterns in the code that can lead to vulnerabilities.
+
+def sql_injection_example(user_input: str):
+    """
+    Vulnerable function demonstrating a classic SQL Injection pattern.
+    A SAST scanner should flag the direct string concatenation.
+    """
+    conn = sqlite3.connect('example.db')
+    cursor = conn.cursor()
+
+    # Insecure: User input is directly concatenated into the SQL query.
+    # A SAST scanner should detect this.
+    # query = "SELECT * FROM users WHERE name = '" + user_input + "'"
+    # print(f"Executing insecure query: {query}")
+    # cursor.execute(query)
+
+    # Secure: The same query using a parameterized statement, which prevents injection.
+    print("Using a parameterized query (secure method).")
+    query = "SELECT * FROM users WHERE name = ?"
+    cursor.execute(query, (user_input,))
+
+    result = cursor.fetchall()
+    print(f"Query result: {result}")
+    conn.close()
+
+
+def insecure_deserialization_example(data_from_untrusted_source: bytes):
+    """
+    Vulnerable function demonstrating insecure deserialization using the 'pickle' module.
+    A SAST scanner should flag the use of 'pickle.loads' on untrusted data.
+    """
+    import pickle
+    
+    # Insecure: Using pickle.loads on data from an untrusted source.
+    # An attacker can craft malicious pickled data to execute arbitrary code.
+    # try:
+    #     untrusted_object = pickle.loads(data_from_untrusted_source)
+    #     print(f"Successfully deserialized object: {untrusted_object}")
+    # except Exception as e:
+    #     print(f"Error during deserialization: {e}")
+    
+    # Secure: Prefer safer formats like JSON or YAML for data exchange.
+    # Note: JSON is generally safer as it does not support arbitrary code execution.
+    try:
+        untrusted_object = json.loads(data_from_untrusted_source.decode('utf-8'))
+        print("Using a secure deserialization method (JSON).")
+        print(f"Successfully deserialized object: {untrusted_object}")
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+    
+
+# --- SECTION 2: SCA (Software Composition Analysis) Example ---
+# SCA scanners check for vulnerable versions of third-party libraries.
+# This check is typically done by scanning the 'requirements.txt' file.
+
+# A scanner would flag a vulnerable version of a library.
+# The code below is not vulnerable, but imagine your requirements.txt
+# file contains a known vulnerable version, like requests==2.20.0.
+# A SCA tool would report this vulnerability even if your code itself is benign.
+
+# Example vulnerable dependency (hypothetical):
+# requests==2.20.0
+#
+# The actual requests library is imported and used securely here.
+def fetch_data_from_api(url: str):
+    """Fetches data from an API using the requests library."""
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        print(f"Successfully fetched data from {url}")
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return None
+
+# --- SECTION 3: Secret Detection Examples ---
+# Secret scanners look for hard-coded credentials in the source code.
+
+# The following lines are intentionally left uncommented to be detectable.
+# In a real-world scenario, these should be stored securely, e.g., in
+# environment variables or a secret management system.
+
+# Hard-coded API key
+API_KEY = "sk_live_1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p"  # Secret: AWS Access Key ID pattern
+
+# Hard-coded password
+DATABASE_PASSWORD = "mysecretpassword123!" # Secret: Simple password
+
+# Hard-coded JSON Web Token (JWT)
+JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2gWpwaK_RfW" # Secret: JWT token pattern
+
+def main():
+    """Main function to run the examples."""
+    print("--- Running Dummy Security Code Examples ---")
+
+    # SAST examples
+    sql_injection_example("John Doe")
+    insecure_deserialization_example(b'{"name": "test"}')
+
+    # SCA example (dependency version)
+    fetch_data_from_api("https://api.github.com")
+
+    # Secret detection variables are at the top of the file.
+
+if __name__ == "__main__":
+    main()
